@@ -16,27 +16,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK and NDK
+      - name: Setup NDK
         run: |
-          # Скачиваем свежие command-line tools напрямую с серверов Google
-          cd $HOME
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q commandlinetools-linux-11076708_latest.zip
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          mv cmdline-tools $HOME/android-sdk/cmdline-tools/latest
-          
-          # Настраиваем окружение
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          
-          # Принимаем лицензии и ставим NDK
-          yes | sdkmanager --licenses > /dev/null
+          echo "y" | sdkmanager --licenses > /dev/null
           sdkmanager "ndk;26.1.10909125"
-          
-          # Сохраняем пути для следующих шагов
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
+      - name: Remove conflicting local.properties
+        run: rm -f local.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -49,4 +36,3 @@ jobs:
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/*.apk
-          
